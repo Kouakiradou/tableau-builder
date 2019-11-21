@@ -5,7 +5,7 @@
 
 
 int Fsize=50 * sizeof(char); /*maximum formula length*/
-int inputs =10;/* number of formulas expected in input.txt*/
+int inputs =1;/* number of formulas expected in input.txt*/
 int i;/* in case you need it */
 int ThSize=100;/* maximum size of set of formulas*/
 int TabSize=500; /*maximum length of tableau queue*/
@@ -62,29 +62,6 @@ int isAllExpand(struct tableau *t);
 int main()
 { 
 
-  // char a[50] =  "-(p>(q>p))";
-  // struct set S={a, NULL};
-  // struct tableau t={&S, NULL};
-
-
-
-/*  struct set *test = malloc(sizeof(struct set));
-  test->item = malloc(sizeof(Fsize));
-  test->tail = malloc(sizeof(struct set));
-  test->tail->item = malloc(sizeof(Fsize));
-  test->tail->tail = malloc(sizeof(struct set));
-  test->tail->tail->item = malloc(sizeof(Fsize));
-  strcpy(test->item, "q");
-  strcpy(test->tail->item, "q");
-  strcpy(test->tail->tail->item, "-q"); */
-  // struct tableau *newT = complete(&t);
-  // printTab(newT);
-  // printf("%d\n", isClosed(newT->S));
-  //  printf("%d\n", isClosed(newT->rest->S));
-
- // printf("%s\n", rulepartone(a));
- // printf("%s\n", ruleparttwo(a));
-
 
    char *name = malloc(Fsize);
   char *name2 = malloc(Fsize);
@@ -115,6 +92,7 @@ int main()
       if (parse(name)!=0)
 	    {
         struct tableau *newT = complete(&t);
+        printf("%d:*****************\n", j);
         printTab(newT);
 	      if (closed(newT))  fprintf(fpout, "%s is not satisfiable.\n", name2);
 	      else fprintf(fpout, "%s is satisfiable.\n", name2);
@@ -138,27 +116,12 @@ struct tableau *complete(struct tableau *t)
   strcpy(ssstr, t->S->item);  
   while(t != NULL)
   {
+    int bool = 0;
     struct tableau *currentSet = t;
     struct set *currentWords = currentSet->S;
-   // currentSet = currentSet->rest;
-  //  if (isExpand(currentSet->S) && isClosed(currentSet->S))
-  //  {
-  //       struct tableau *beta1 = malloc(sizeof(struct tableau));
-  //       beta1->S = cloneSet(currentSet->S);
-  //       beta1->rest = NULL;
-  //         if (t == NULL)
-  //         {
-  //           t = beta1;
-  //         }
-  //         else
-  //         {
-  //           findTail(t)->rest = beta1;
-  //         }
-  //  }
     t = t->rest;
     if (isAllExpand(currentSet))
     {
-      // printf("satisfiable");
       return currentSet;
     }
     else
@@ -179,25 +142,24 @@ struct tableau *complete(struct tableau *t)
           {
             findTail(t)->rest = beta2;
           }
+          bool = 1;
+          break;
         }
+      }
+      if (bool == 1)
+      {
+        continue;
       }
       if(isAlpha(currentWords->item))
       {
         char *formula = malloc(Fsize);
         strcpy(formula, currentWords->item);
-         /*************************/
-        char *formula1 = malloc(Fsize);
-        strcpy(formula1, rulepartone(formula));
-        char *formula2 = malloc(Fsize);
-        strcpy(formula2, ruleparttwo(formula));
-        strcpy(currentWords->item, formula1);
-        printf("%s-*****\n", formula);
-        struct set *alpha2 = malloc(sizeof(struct set));
-        alpha2->item = malloc(Fsize);
-        strcpy(alpha2->item, formula2);
-        alpha2->tail = currentWords->tail;
-        currentWords->tail = alpha2;
-        currentSet->rest = NULL;
+        if(isNeg(formula) && isNeg(formula + 1))
+        {
+          char *formula1 = malloc(Fsize);
+          strcpy(formula1, formula + 2);
+          strcpy(currentWords->item, formula1);
+          currentSet->rest = NULL;
           if (t == NULL)
           {
             t = currentSet;
@@ -206,7 +168,35 @@ struct tableau *complete(struct tableau *t)
           {
             findTail(t)->rest = currentSet;
           }
-        // }
+        }
+         /*************************/
+         else
+         {
+
+           /* code */
+            char *formula1 = malloc(Fsize);
+            strcpy(formula1, rulepartone(formula));
+            char *formula2 = malloc(Fsize);
+            strcpy(formula2, ruleparttwo(formula));
+            strcpy(currentWords->item, formula1);
+            // printf("%s-*****\n", formula);
+            struct set *alpha2 = malloc(sizeof(struct set));
+            alpha2->item = malloc(Fsize);
+            strcpy(alpha2->item, formula2);
+            alpha2->tail = currentWords->tail;
+            currentWords->tail = alpha2;
+            currentSet->rest = NULL;
+            if (t == NULL)
+              {
+                t = currentSet;
+              }
+            else
+              {
+                findTail(t)->rest = currentSet;
+              }
+          }
+         
+        
       }
       else
       {
@@ -315,66 +305,6 @@ int closed(struct tableau *t)
 }
 
 
-/*int mockLiteral(char *str);
-int isContra(char* str1,char* str2);
-int isClosed(struct set *s)
-{
-  if (s== NULL){
-    return 0;
-  }
-  do{
-  if(mockLiteral(s->item) != 4)
-  {
-    struct set *temp = s;
-    do
-    {
-      if(mockLiteral(temp->item) != 4)
-      {
-        if(isContra(temp->item,s->item))
-        {
-          return 1;
-        }
-      }
-      temp = temp->tail;
-    }while(temp != NULL);
-  }
-  s = s->tail;
-  }while(s != NULL);
-  return 0;
-}
-
-int mockLiteral(char *str){
-  if(strlen(str)>2 || strlen(str)==0)
-  return 4;
-  if (strlen(str)==1){
-    switch(*str){
-      case('p'):
-        return 1;
-      case('q'):
-        return 2;
-      case('r'):
-        return 3;
-    }
-  }
-  if (strlen(str)==1 && *str == '-'){
-    switch(*(str+1)){
-      case('p'):
-        return -1;
-      case('q'):
-        return -2;
-      case('r'):
-        return -3;
-    }
-  }
-  return 4;
-}
-
-int isContra(char* str1,char* str2){
-  if (mockLiteral(str1) + mockLiteral(str2) == 0){
-    return 1;
-  }
-  return 0;
-}*/
 
 
 
@@ -674,7 +604,14 @@ int isAlpha(char* formula)
   }
   else if(isNeg(formula))
   {
-    return (!isAlpha(formula + 1));
+    if(isNeg(formula + 1))
+    {
+      return 1;
+    }
+    else
+    {
+      return (!isAlpha(formula + 1));
+    }
   }
   else
   {
