@@ -5,7 +5,7 @@
 
 
 int Fsize=50 * sizeof(char); /*maximum formula length*/
-int inputs =1;/* number of formulas expected in input.txt*/
+int inputs =20;/* number of formulas expected in input.txt*/
 int i;/* in case you need it */
 int ThSize=100;/* maximum size of set of formulas*/
 int TabSize=500; /*maximum length of tableau queue*/
